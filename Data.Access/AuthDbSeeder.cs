@@ -1,4 +1,5 @@
 ﻿using Flamma.Auth.Data.Access.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Flamma.Auth.Data.Access;
@@ -10,9 +11,9 @@ namespace Flamma.Auth.Data.Access;
 public class AuthDbSeeder
 {
     /// <summary>
-    ///     Primary auth database context
+    ///     Primary database context factory
     /// </summary>
-    private readonly AuthDbContext _context;
+    private readonly IDbContextFactory<AuthDbContext> _contextFactory;
 
     /// <summary>
     ///     Logger
@@ -22,9 +23,9 @@ public class AuthDbSeeder
     /// <summary>
     ///     .ctor
     /// </summary>
-    public AuthDbSeeder(AuthDbContext context, ILogger<AuthDbSeeder> logger)
+    public AuthDbSeeder(IDbContextFactory<AuthDbContext> contextFactory, ILogger<AuthDbSeeder> logger)
     {
-        _context = context;
+        _contextFactory = contextFactory;
         _logger = logger;
     }
 
@@ -38,7 +39,8 @@ public class AuthDbSeeder
 
     private void SeedUsers()
     {
-        if(_context.UserData.Any())
+        using var context = _contextFactory.CreateDbContext();
+        if(context.UserData.Any())
             return;
         
         var userSeed = new []
@@ -53,7 +55,7 @@ public class AuthDbSeeder
                     FirstName = "Bob",
                     LastName = "Valentine",
                     PrimaryLocationId = Guid.Parse("d01eb040-e06b-4ed0-99d8-e134e0a061f7"),
-                    BirthDate = new DateTime(1990, 5, 14)
+                    BirthDate = new DateTime(1990, 5, 14).ToUniversalTime()
                 }
             },
             // Dummy record 2
@@ -66,13 +68,13 @@ public class AuthDbSeeder
                     FirstName = "Rick",
                     LastName = "Holmes",
                     PrimaryLocationId = Guid.Parse("9e44fe80-328a-46d0-a532-0302caf40c26"),
-                    BirthDate = new DateTime(1985, 3, 8)
+                    BirthDate = new DateTime(1985, 3, 8).ToUniversalTime()
                 }
             }
         };
         
-        _context.UserData.AddRange(userSeed);
-        var changes = _context.SaveChanges();
+        context.UserData.AddRange(userSeed);
+        var changes = context.SaveChanges();
         if (changes != userSeed.Length)
             _logger.LogWarning(
                 "[UserData] Seed length {UserDataSeedLength} is not equal to added row count: {Changes}",
