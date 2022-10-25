@@ -22,5 +22,5 @@ public class UserData : PgRepoEntity<AuthDbContext>
     /// <summary>
     ///     Additional user information link
     /// </summary>
-    public virtual AdditionalUserInformation AdditionalUserInformation { get; set; } = null!;
+    public virtual AdditionalUserInformation AdditionalUserInformation { get; set; }
 }

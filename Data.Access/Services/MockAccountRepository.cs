@@ -62,6 +62,8 @@ public class MockAccountRepository : IAccountRepository
     }
 
     /// <inheritdoc />
+#pragma warning disable CS1998
     public async Task<bool> IsUsernameUniqueAsync(string username, CancellationToken token = default) =>
+#pragma warning restore CS1998
         !_userData.ContainsKey(username);
 }

@@ -33,5 +33,5 @@ public class AdditionalUserInformation : PgRepoEntity<AuthDbContext>
     /// </summary>
     [ForeignKey("UserData")]
     public Guid UserDataId { get; set; }
-    public virtual UserData UserData { get; set; } = null!;
+    public virtual UserData UserData { get; set; }
 }
