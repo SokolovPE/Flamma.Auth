@@ -12,13 +12,16 @@ public interface IAccountManager
     ///     Validate incoming registration request
     /// </summary>
     /// <param name="request">Registration request</param>
+    /// <param name="token">Cancellation token</param>
     /// <returns>Validation result</returns>
-    public Task<ValidationResult> ValidateRegistrationRequestAsync(Models.RegisterRequest request, CancellationToken token = default);
-    
+    public Task<ValidationResult> ValidateRegistrationRequestAsync(Models.RegisterRequest request,
+        CancellationToken token = default);
+
     /// <summary>
     ///     Register new user
     /// </summary>
     /// <param name="request">Registration request</param>
+    /// <param name="token">Cancellation token</param>
     /// <returns>Result of registration process</returns>
-    public Task<RegisterResult> RegisterUserAsync(Models.RegisterRequest  request, CancellationToken token = default);
+    public Task<RegisterResult> RegisterUserAsync(Models.RegisterRequest request, CancellationToken token = default);
 }

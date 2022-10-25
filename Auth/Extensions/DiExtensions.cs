@@ -20,7 +20,8 @@ public static class DiExtensions
         serviceCollection.AddDataAccess();
         
         serviceCollection.AddScoped<IAccountManager, Services.CoreAccountManager>();
-        serviceCollection.AddSingleton<IHasher, Hasher>();
+        serviceCollection.AddSingleton<IDateProvider, Services.BaseDateProvider>();
+        serviceCollection.AddSingleton<IHasher, Services.Hasher>();
         
         // Add validators
         serviceCollection.AddScoped<IValidator<Models.RegisterRequest>, RegisterRequestValidator>();

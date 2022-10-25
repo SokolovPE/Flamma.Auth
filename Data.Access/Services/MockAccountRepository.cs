@@ -32,7 +32,7 @@ public class MockAccountRepository : IAccountRepository
                         FirstName = "Bob",
                         LastName = "Valentine",
                         PrimaryLocationId = Guid.Parse("d01eb040-e06b-4ed0-99d8-e134e0a061f7"),
-                        BirthDate = new DateTime(1990, 5, 14)
+                        BirthDate = new DateTime(1990, 5, 14).ToUniversalTime()
                     }
                 }
             },
@@ -47,7 +47,7 @@ public class MockAccountRepository : IAccountRepository
                         FirstName = "Rick",
                         LastName = "Holmes",
                         PrimaryLocationId = Guid.Parse("9e44fe80-328a-46d0-a532-0302caf40c26"),
-                        BirthDate = new DateTime(1985, 3, 8)
+                        BirthDate = new DateTime(1985, 3, 8).ToUniversalTime()
                     }
                 }
             }
