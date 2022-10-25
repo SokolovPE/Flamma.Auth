@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option csharp_namespace = "Flamma.Auth";
+
+package common;
+
+// Possible registration statuses
+enum RegistrationStatus {
+  // Indicates successful registration.
+  SUCCESS = 0;
+  // Indicates failed registration.
+  FAIL = 1;
+  // Registration request is invalid.
+  INVALID = 2;
+}

@@ -1,0 +1,36 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Flamma.Auth";
+
+import "Protos/common.proto";
+import "google/protobuf/timestamp.proto";
+
+package manager;
+
+// Service that manages user account
+service AccountManager {
+  // Sends a greeting
+  rpc Register (RegisterRequest) returns (RegisterReply);
+}
+
+// The registration request message containing the users name.
+message RegisterRequest {
+  string username = 1;
+  string password = 2;
+  UserInfo user_info = 3;
+}
+
+// The registration response message containing operation status and message.
+message RegisterReply {
+  common.RegistrationStatus status = 1;
+  string message = 2;
+}
+
+// Represents user information.
+message UserInfo {
+  string first_name = 1;
+  string last_name = 2;
+  google.protobuf.Timestamp birth_date = 3;
+  // Identifier of users primary location.
+  string primary_location_id = 4;
+}
