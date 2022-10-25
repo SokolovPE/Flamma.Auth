@@ -1,9 +1,12 @@
-﻿namespace Flamma.Auth.Data.Access.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using AzisFood.DataEngine.Postgres.Models;
+
+namespace Flamma.Auth.Data.Access.Models;
 
 /// <summary>
 ///     Additional user information
 /// </summary>
-public class AdditionalUserInformation
+public class AdditionalUserInformation : PgRepoEntity<AuthDbContext>
 {
     /// <summary>
     ///     Users first name
@@ -24,4 +27,11 @@ public class AdditionalUserInformation
     ///     Date when user was born
     /// </summary>
     public DateTime BirthDate { get; set; }
+    
+    /// <summary>
+    ///     Link to user data
+    /// </summary>
+    [ForeignKey("UserData")]
+    public Guid UserDataId { get; set; }
+    public virtual UserData UserData { get; set; } = null!;
 }

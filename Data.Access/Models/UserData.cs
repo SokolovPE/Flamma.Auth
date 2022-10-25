@@ -1,9 +1,13 @@
-﻿namespace Flamma.Auth.Data.Access.Models;
+﻿using AzisFood.DataEngine.Postgres.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace Flamma.Auth.Data.Access.Models;
 
 /// <summary>
 ///     User registration request
 /// </summary>
-public class UserData
+[Index(nameof(Username), IsUnique = true)]
+public class UserData : PgRepoEntity<AuthDbContext>
 {
     /// <summary>
     ///     User login
@@ -16,7 +20,7 @@ public class UserData
     public string PasswordHash { get; set; }
     
     /// <summary>
-    ///     Additional user information
+    ///     Additional user information link
     /// </summary>
-    public AdditionalUserInformation AdditionalUserInformation { get; set; }
+    public virtual AdditionalUserInformation AdditionalUserInformation { get; set; } = null!;
 }

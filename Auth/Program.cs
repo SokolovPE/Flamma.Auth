@@ -1,3 +1,6 @@
+using AzisFood.DataEngine.Postgres.Extensions;
+using Flamma.Auth.Data.Access;
+using Flamma.Auth.Data.Access.Extensions;
 using Flamma.Auth.Extensions;
 using Flamma.Auth.Mappings;
 using Flamma.Auth.Services;
@@ -15,6 +18,14 @@ builder.Host
 // Add services to the container
 builder.Services.AddCoreServices();
 
+// Add data engine
+builder.Services
+    .AddPostgresSupport(builder.Configuration)
+    .AddPostgresContext<AuthDbContext>();
+
+// builder.Services.AddTransient<AuthDbSeeder>();
+
+// Add Grpc
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
@@ -27,11 +38,15 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapGrpcReflectionService();
+    //app.Services.AddSeeder(app.Configuration);
 }
 // Configure the HTTP request pipeline
 app.MapGrpcService<AccountManagerService>();
 app.MapGet("/",
     () =>
         "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+
+
+// app.Services.AddSeeder(app.Configuration);
 
 app.Run();

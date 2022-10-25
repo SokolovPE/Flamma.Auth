@@ -11,7 +11,7 @@ public class MockAccountRepository : IAccountRepository
     /// <summary>
     ///     Storage imitation
     /// </summary>
-    /// <remarks>Key imitates PK on database table</remarks>
+    /// <remarks>Key imitates unique index on database table</remarks>
     private readonly Dictionary<string, UserData> _userData;
 
     /// <summary>

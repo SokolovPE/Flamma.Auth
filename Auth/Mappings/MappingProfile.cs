@@ -10,7 +10,7 @@ public class MappingProfile : Profile
         // Grpc user info to BL user information
         CreateMap<UserInfo, UserInformation>()
             .ForMember(dest => dest.PrimaryLocationId, mo => mo.MapFrom(src => Guid.Parse(src.PrimaryLocationId)))
-            .ForMember(dest => dest.BirthDate, mo => mo.MapFrom(src => src.BirthDate.ToDateTime()));
+            .ForMember(dest => dest.BirthDate, mo => mo.MapFrom(src => src.BirthDate.ToDateTime().ToUniversalTime()));
 
         // Grpc registration request to BL registration request
         CreateMap<RegisterRequest, Models.RegisterRequest>()
