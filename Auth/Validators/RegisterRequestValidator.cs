@@ -56,6 +56,7 @@ public class RegisterRequestValidator : AbstractValidator<Models.RegisterRequest
     {
         // For now do not check location
         // When location service will be ready - enable validation
+        // Add test too
         return true;
     }
 

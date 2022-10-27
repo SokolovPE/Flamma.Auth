@@ -46,8 +46,88 @@ public class RegisterRequestValidatorTests : IClassFixture<RegisterFixture>
     [Fact]
     public async Task ValidateRequest_GotNonUniqueUsername_ReturnsInvalidValidationResult()
     {
+        // Arrange
         var request = _fixture.MakeNonUniqueRegisterRequest();
+        
+        // Act
         var result = await _validator.TestValidateAsync(request);
+        
+        // Assert
         result.ShouldHaveValidationErrorFor(registerRequest => registerRequest.Username);
+    }
+
+    [Theory]
+    [InlineData("12345", false)]
+    [InlineData("qwerty12345", false)]
+    [InlineData("Qwerty12345", false)]
+    [InlineData("Qwerty12345!", true)]
+    public async Task ValidateRequest_ValidatePassword(string password, bool expected)
+    {
+        // Arrange
+        var request = _fixture.MakeNonUniqueRegisterRequest();
+        request.Password = password;
+        
+        // Act
+        var result = await _validator.TestValidateAsync(request);
+
+        // Assert
+        if (expected)
+        {
+            result.ShouldNotHaveValidationErrorFor(registerRequest => registerRequest.Password);
+        }
+        else
+        {
+            result.ShouldHaveValidationErrorFor(registerRequest => registerRequest.Password);
+        }
+    }
+
+    [Theory]
+    [InlineData("111", false)]
+    [InlineData("name1", false)]
+    [InlineData("name!", false)]
+    [InlineData("name", true)]
+    public async Task ValidateRequest_ValidateFirstName(string firstName, bool expected)
+    {
+        // Arrange
+        var request = _fixture.MakeNonUniqueRegisterRequest();
+        request.UserInformation.FirstName = firstName;
+        
+        // Act
+        var result = await _validator.TestValidateAsync(request);
+
+        // Assert
+        if (expected)
+        {
+            result.ShouldNotHaveValidationErrorFor(registerRequest => registerRequest.UserInformation.FirstName);
+        }
+        else
+        {
+            result.ShouldHaveValidationErrorFor(registerRequest => registerRequest.UserInformation.FirstName);
+        }
+    }
+
+    [Theory]
+    [InlineData("111", false)]
+    [InlineData("name1", false)]
+    [InlineData("name!", false)]
+    [InlineData("name", true)]
+    public async Task ValidateRequest_ValidateLastName(string firstName, bool expected)
+    {
+        // Arrange
+        var request = _fixture.MakeNonUniqueRegisterRequest();
+        request.UserInformation.LastName = firstName;
+        
+        // Act
+        var result = await _validator.TestValidateAsync(request);
+
+        // Assert
+        if (expected)
+        {
+            result.ShouldNotHaveValidationErrorFor(registerRequest => registerRequest.UserInformation.LastName);
+        }
+        else
+        {
+            result.ShouldHaveValidationErrorFor(registerRequest => registerRequest.UserInformation.LastName);
+        }
     }
 }
