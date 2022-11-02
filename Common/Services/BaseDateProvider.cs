@@ -1,6 +1,6 @@
-﻿using Flamma.Auth.Interfaces;
+﻿using Flamma.Auth.Common.Interfaces;
 
-namespace Flamma.Auth.Services;
+namespace Flamma.Auth.Common.Services;
 
 /// <summary>
 ///     Basic service to work with dates

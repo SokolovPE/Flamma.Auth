@@ -17,6 +17,7 @@ builder.Host
 
 // Add services to the container
 builder.Services.AddCoreServices();
+builder.Services.AddJwt(builder.Configuration);
 
 // Add data engine
 builder.Services
@@ -46,6 +47,8 @@ app.MapGet("/",
     () =>
         "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
+// Add authentication and authorization
+app.UseAuthentication().UseAuthorization();
 
 app.Services.AddSeeder(app.Configuration);
 

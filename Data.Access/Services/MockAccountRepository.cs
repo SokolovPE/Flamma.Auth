@@ -62,8 +62,38 @@ public class MockAccountRepository : IAccountRepository
     }
 
     /// <inheritdoc />
-#pragma warning disable CS1998
-    public async Task<bool> IsUsernameUniqueAsync(string username, CancellationToken token = default) =>
-#pragma warning restore CS1998
-        !_userData.ContainsKey(username);
+    public Task<bool> IsUsernameUniqueAsync(string username, CancellationToken token = default) =>
+        Task.FromResult(!_userData.ContainsKey(username));
+
+    /// <inheritdoc />
+    public Task<bool> ValidateUser(string username, string passwordHash, CancellationToken token = default) =>
+        Task.FromResult(_userData.Any(userData =>
+            userData.Value.Username == username && userData.Value.PasswordHash == passwordHash));
+
+    /// <inheritdoc />
+    public Task UpdateUserRefreshToken(string username, string refreshToken, DateTime refreshTokenValidTo,
+        CancellationToken token = default)
+    {
+        if (!_userData.ContainsKey(username))
+        {
+            throw new InvalidOperationException($"User with username {username} was not found");
+        }
+        
+        var item = _userData[username];
+        item.RefreshTokenExpiryTime = refreshTokenValidTo;
+        item.RefreshToken = refreshToken;
+        _userData[username] = item;
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public Task<byte[]> GetUserSalt(string username, CancellationToken token = default)
+    {
+        if (!_userData.ContainsKey(username))
+        {
+            throw new InvalidOperationException($"User with username {username} was not found");
+        }
+
+        return Task.FromResult(_userData[username].Salt);
+    }
 }

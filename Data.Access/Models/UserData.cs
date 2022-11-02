@@ -20,7 +20,22 @@ public class UserData : PgRepoEntity<AuthDbContext>
     public string PasswordHash { get; set; }
     
     /// <summary>
+    ///     User salt
+    /// </summary>
+    public byte[] Salt { get; set; }
+    
+    /// <summary>
     ///     Additional user information link
     /// </summary>
     public virtual AdditionalUserInformation AdditionalUserInformation { get; set; }
+    
+    /// <summary>
+    ///     Refresh token of user
+    /// </summary>
+    public string RefreshToken { get; set; }
+    
+    /// <summary>
+    ///     Lifetime of refresh token
+    /// </summary>
+    public DateTime RefreshTokenExpiryTime { get; set; }
 }

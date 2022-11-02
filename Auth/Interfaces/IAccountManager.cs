@@ -24,4 +24,9 @@ public interface IAccountManager
     /// <param name="token">Cancellation token</param>
     /// <returns>Result of registration process</returns>
     public Task<RegisterResult> RegisterUserAsync(Models.RegisterRequest request, CancellationToken token = default);
+
+    /// <summary>
+    ///     Log user in
+    /// </summary>
+    public Task<LoginResult> HandleLoginAsync(string username, string password, CancellationToken token = default);
 }

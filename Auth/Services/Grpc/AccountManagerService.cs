@@ -42,21 +42,44 @@ public class AccountManagerService : AccountManager.AccountManagerBase
     {
         _logger.LogInformation("New account registration request: {@RegistrationRequest}", request);
         var mappedRequest = _mapper.Map<Models.RegisterRequest>(request);
-        
+
         // Validation
-        var validationResult = await _accountManager.ValidateRegistrationRequestAsync(mappedRequest);
+        var validationResult =
+            await _accountManager.ValidateRegistrationRequestAsync(mappedRequest, context.CancellationToken);
         if (!validationResult.IsValid)
         {
             return new RegisterReply
             {
-                Status = RegistrationStatus.Invalid,
+                Status = CommonStatus.Invalid,
                 Message = validationResult.ToString()
             };
         }
 
         // Try to register user
-        var result = await _accountManager.RegisterUserAsync(mappedRequest);
-        var response =  _mapper.Map<RegisterReply>(result);
+        var result = await _accountManager.RegisterUserAsync(mappedRequest, context.CancellationToken);
+        var response = _mapper.Map<RegisterReply>(result);
         return response;
+    }
+
+    /// <summary>
+    ///     Log user in
+    /// </summary>
+    public override async Task<LoginResponse> Login(LoginRequest request, ServerCallContext context)
+    {
+        _logger.LogInformation("New user login request: {@LoginRequest}", request);
+        try
+        {
+            var handleResult =
+                await _accountManager.HandleLoginAsync(request.Username, request.Password, context.CancellationToken);
+            var result = _mapper.Map<LoginResponse>(handleResult);
+            return result;
+        }
+        catch (InvalidOperationException)
+        {
+            return new LoginResponse
+            {
+                Status = CommonStatus.Invalid
+            };
+        }
     }
 }

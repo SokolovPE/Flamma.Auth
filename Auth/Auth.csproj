@@ -9,6 +9,14 @@
         <RootNamespace>Flamma.Auth</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DocumentationFile>bin\Debug\Auth.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile>bin\Release\Auth.xml</DocumentationFile>
+    </PropertyGroup>
+
     <ItemGroup>
         <Protobuf Include="Protos\common.proto" GrpcServices="Server" />
         <Protobuf Include="Protos\account.proto" GrpcServices="Server" />
@@ -21,6 +29,7 @@
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.2.2" />
         <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
         <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.49.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.7" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.7">
           <PrivateAssets>all</PrivateAssets>

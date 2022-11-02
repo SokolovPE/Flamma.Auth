@@ -3,6 +3,9 @@ using FluentValidation;
 
 namespace Flamma.Auth.Validators;
 
+/// <summary>
+///     Validator for registration request
+/// </summary>
 public class RegisterRequestValidator : AbstractValidator<Models.RegisterRequest>
 {
     /// <summary>

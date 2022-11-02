@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flamma.Auth.Data.Access.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20221025143535_Initial")]
+    [Migration("20221102164354_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,11 +34,9 @@ namespace Flamma.Auth.Data.Access.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("PrimaryLocationId")
@@ -62,11 +60,18 @@ namespace Flamma.Auth.Data.Access.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("Salt")
+                        .HasColumnType("bytea");
+
                     b.Property<string>("Username")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -90,8 +95,7 @@ namespace Flamma.Auth.Data.Access.Migrations
 
             modelBuilder.Entity("Flamma.Auth.Data.Access.Models.UserData", b =>
                 {
-                    b.Navigation("AdditionalUserInformation")
-                        .IsRequired();
+                    b.Navigation("AdditionalUserInformation");
                 });
 #pragma warning restore 612, 618
         }

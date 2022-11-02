@@ -27,7 +27,46 @@ public class AccountRepository : IAccountRepository
     public async Task<bool> IsUsernameUniqueAsync(string username, CancellationToken token = default)
     {
         var record =
-            await _userDataRepository.GetAsync(filter: data => data.Username == username, track: false, token: token);
-        return !record.Any();
+            await _userDataRepository.ExistsAsync(filter: data => data.Username == username, token: token);
+        return !record;
+    }
+    
+    /// <inheritdoc />
+    public async Task<bool> ValidateUser(string username, string passwordHash, CancellationToken token = default)
+    {
+        var userValid = await _userDataRepository.ExistsAsync(
+            filter: userData => userData.Username == username && userData.PasswordHash == passwordHash, token);
+        return userValid;
+    }
+
+    /// <inheritdoc />
+    public async Task<byte[]> GetUserSalt(string username, CancellationToken token = default)
+    {
+        var user = await _userDataRepository.GetAsync(filter: userData => userData.Username == username, track: false,
+            token);
+        var item = user.FirstOrDefault();
+        if (item is null)
+        {
+            throw new InvalidOperationException($"User with username {username} was not found");
+        }
+
+        return item.Salt;
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateUserRefreshToken(string username, string refreshToken, DateTime refreshTokenValidTo,
+        CancellationToken token = default)
+    {
+        var request =
+            await _userDataRepository.GetAsync(filter: item => item.Username == username, track: false, token: token);
+        var item = request.FirstOrDefault();
+        if (item is null)
+        {
+            throw new InvalidOperationException($"User with username {username} was not found");
+        }
+
+        item.RefreshTokenExpiryTime = refreshTokenValidTo;
+        item.RefreshToken = refreshToken;
+        await _userDataRepository.UpdateAsync(item.Id, item, token);
     }
 }

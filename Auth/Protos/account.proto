@@ -9,8 +9,10 @@ package manager;
 
 // Service that manages user account
 service AccountManager {
-  // Sends a greeting
+  // Register new user
   rpc Register (RegisterRequest) returns (RegisterReply);
+  // Log user in
+  rpc Login (LoginRequest) returns (LoginResponse);
 }
 
 // The registration request message containing the users name.
@@ -22,7 +24,7 @@ message RegisterRequest {
 
 // The registration response message containing operation status and message.
 message RegisterReply {
-  common.RegistrationStatus status = 1;
+  common.CommonStatus status = 1;
   string message = 2;
 }
 
@@ -33,4 +35,23 @@ message UserInfo {
   google.protobuf.Timestamp birth_date = 3;
   // Identifier of users primary location.
   string primary_location_id = 4;
+}
+
+// The login request message.
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+// The login response message.
+message LoginResponse {
+  common.CommonStatus status = 1;
+  TokenInfo token_info = 2;
+}
+
+// Information about token
+message TokenInfo {
+  string token = 1;
+  string refresh_token = 2;
+  google.protobuf.Timestamp token_valid_to = 3;
 }

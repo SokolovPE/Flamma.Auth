@@ -16,4 +16,20 @@ public interface IAccountRepository
     ///     Check uniqueness of username
     /// </summary>
     public Task<bool> IsUsernameUniqueAsync(string username, CancellationToken token = default);
+
+    /// <summary>
+    ///     Validate user over database
+    /// </summary>
+    Task<bool> ValidateUser(string username, string passwordHash, CancellationToken token = default);
+
+    /// <summary>
+    ///     Update refresh token information for given username
+    /// </summary>
+    Task UpdateUserRefreshToken(string username, string refreshToken, DateTime refreshTokenValidTo,
+        CancellationToken token = default);
+
+    /// <summary>
+    ///     Get salt for given username
+    /// </summary>
+    Task<byte[]> GetUserSalt(string username, CancellationToken token = default);
 }

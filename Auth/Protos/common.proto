@@ -5,7 +5,7 @@ option csharp_namespace = "Flamma.Auth";
 package common;
 
 // Possible registration statuses
-enum RegistrationStatus {
+enum CommonStatus {
   // Indicates successful registration.
   SUCCESS = 0;
   // Indicates failed registration.

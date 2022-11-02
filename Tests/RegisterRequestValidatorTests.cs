@@ -1,9 +1,7 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Flamma.Auth.Data.Access.Interfaces;
-using Flamma.Auth.Models;
 using Flamma.Auth.Validators;
 using FluentValidation.TestHelper;
 using Moq;
