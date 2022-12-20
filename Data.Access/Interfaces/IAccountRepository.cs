@@ -29,6 +29,11 @@ public interface IAccountRepository
         CancellationToken token = default);
 
     /// <summary>
+    ///     Get refresh token for given username
+    /// </summary>
+    Task<string> GetUserRefreshToken(string username, CancellationToken token = default);
+
+    /// <summary>
     ///     Get salt for given username
     /// </summary>
     Task<byte[]> GetUserSalt(string username, CancellationToken token = default);

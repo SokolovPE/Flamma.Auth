@@ -82,4 +82,29 @@ public class AccountManagerService : AccountManager.AccountManagerBase
             };
         }
     }
+
+    /// <summary>
+    ///     Validate users JWT token
+    /// </summary>
+    public override async Task<TokenValidationResponse> ValidateToken(TokenValidationRequest request,
+        ServerCallContext context)
+    {
+        try
+        {
+            var tokenValid =
+                await _accountManager.ValidateTokenAsync(request.Token, request.Username, context.CancellationToken);
+            return new TokenValidationResponse
+            {
+                Status = CommonStatus.Success,
+                ValidationResult = tokenValid
+            };
+        }
+        catch (Exception)
+        {
+            return new TokenValidationResponse
+            {
+                Status = CommonStatus.Fail
+            };
+        }
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AzisFood.CacheService.Redis.Interfaces;
 using Flamma.Auth.Common.Interfaces;
 using Flamma.Auth.Data.Access.Interfaces;
 using Flamma.Auth.Interfaces;
@@ -26,9 +27,15 @@ public class CoreAccountManager : IAccountManager
     private readonly IMapper _mapper;
 
     /// <summary>
+    ///     Cache service
+    ///     TODO: Replace with another cache package, in airplane have no wi-fi to use another
+    /// </summary>
+    private readonly IRedisCacheService _cacheService;
+
+    /// <summary>
     ///     Registration request validator
     /// </summary>
-    private readonly IValidator<Models.RegisterRequest> _requestValidator;
+    private readonly IValidator<Models.RegisterRequest> _registrationRequestValidator;
 
     /// <summary>
     ///     Hash calculation service
@@ -43,20 +50,23 @@ public class CoreAccountManager : IAccountManager
     /// <summary>
     ///     Token generator
     /// </summary>
-    private readonly IJwtGenerator _jwtGenerator;
+    private readonly IJwtGenerator _jwtManager;
 
     /// <summary>
     ///     .ctor
     /// </summary>
-    public CoreAccountManager(ILogger<CoreAccountManager> logger, IValidator<Models.RegisterRequest> requestValidator,
-        IHasher hasher, IAccountRepository accountRepository, IMapper mapper, IJwtGenerator jwtGenerator)
+    public CoreAccountManager(ILogger<CoreAccountManager> logger,
+        IValidator<Models.RegisterRequest> registrationRequestValidator,
+        IHasher hasher, IAccountRepository accountRepository, IMapper mapper, IJwtGenerator jwtManager,
+        IRedisCacheService cacheService)
     {
         Logger = logger;
-        _requestValidator = requestValidator;
+        _registrationRequestValidator = registrationRequestValidator;
         _hasher = hasher;
         _accountRepository = accountRepository;
         _mapper = mapper;
-        _jwtGenerator = jwtGenerator;
+        _jwtManager = jwtManager;
+        _cacheService = cacheService;
     }
 
     /// <inheritdoc />
@@ -65,7 +75,7 @@ public class CoreAccountManager : IAccountManager
     {
         try
         {
-            var result = await _requestValidator.ValidateAsync(request, token);
+            var result = await _registrationRequestValidator.ValidateAsync(request, token);
 
             if (!result.IsValid)
             {
@@ -130,9 +140,9 @@ public class CoreAccountManager : IAccountManager
             {
                 throw new InvalidOperationException($"User validation failed for {username}");
             }
-            
+
             // TODO: Get Roles here and create claims, for now no need
-            var jwtTokenInfo = _jwtGenerator.GenerateToken(username);
+            var jwtTokenInfo = _jwtManager.GenerateToken(username);
 
             return new LoginResult
             {
@@ -147,6 +157,49 @@ public class CoreAccountManager : IAccountManager
             {
                 Success = false
             };
+        }
+    }
+    
+    /// <inheritdoc />
+    public async Task<bool> ValidateTokenAsync(string userToken, string username, CancellationToken token = default)
+    {
+        try
+        {
+            // Check in cache is token presented, if it is no need to validate
+            var cachedToken = await _cacheService.GetAsync<string>($"user_token:{username}");
+            if (!string.IsNullOrWhiteSpace(cachedToken))
+                return true;
+            
+            // If it's not - validate it
+            var tokenValidationResult =  _jwtManager.ValidateToken(userToken, username);
+
+            switch (tokenValidationResult)
+            {
+                // If token is valid - store in cache
+                case JwtTokenStatus.Valid:
+                    await _cacheService.SetAsync($"user_token:{username}", userToken,
+                        TimeSpan.FromSeconds(_jwtManager.GetTokenValidityCheckPeriod()));
+                    break;
+                // If token is expired - refresh it
+                case JwtTokenStatus.Expired:
+                {
+                    var refreshToken = await _accountRepository.GetUserRefreshToken(username, token);
+                    var refreshedToken = _jwtManager.RefreshToken(userToken, refreshToken);
+                    return await ValidateTokenAsync(refreshedToken.Token, username, token);
+                }
+                case JwtTokenStatus.Invalid:
+                    return false;
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        $"Current token validation status is not supported yet, status: {tokenValidationResult}");
+            }
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Error during token validation, user: {Username}, token: {Token}", username, userToken);
+            throw;
         }
     }
 }

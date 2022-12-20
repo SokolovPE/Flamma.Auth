@@ -69,4 +69,18 @@ public class AccountRepository : IAccountRepository
         item.RefreshToken = refreshToken;
         await _userDataRepository.UpdateAsync(item.Id, item, token);
     }
+
+    /// <inheritdoc />
+    public async Task<string> GetUserRefreshToken(string username, CancellationToken token = default)
+    {
+        var request =
+            await _userDataRepository.GetAsync(filter: item => item.Username == username, track: false, token: token);
+        var item = request.FirstOrDefault();
+        if (item is null)
+        {
+            throw new InvalidOperationException($"User with username {username} was not found");
+        }
+
+        return item.RefreshToken;
+    }
 }

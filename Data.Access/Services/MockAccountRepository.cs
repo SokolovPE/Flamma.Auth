@@ -87,6 +87,18 @@ public class MockAccountRepository : IAccountRepository
     }
 
     /// <inheritdoc />
+    public Task<string> GetUserRefreshToken(string username, CancellationToken token = default)
+    {
+        if (!_userData.ContainsKey(username))
+        {
+            throw new InvalidOperationException($"User with username {username} was not found");
+        }
+        
+        var item = _userData[username];
+        return Task.FromResult(item.RefreshToken);
+    }
+
+    /// <inheritdoc />
     public Task<byte[]> GetUserSalt(string username, CancellationToken token = default)
     {
         if (!_userData.ContainsKey(username))

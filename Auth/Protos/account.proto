@@ -13,6 +13,8 @@ service AccountManager {
   rpc Register (RegisterRequest) returns (RegisterReply);
   // Log user in
   rpc Login (LoginRequest) returns (LoginResponse);
+  // Validate users JWT token
+  rpc ValidateToken (TokenValidationRequest) returns (TokenValidationResponse);
 }
 
 // The registration request message containing the users name.
@@ -49,9 +51,21 @@ message LoginResponse {
   TokenInfo token_info = 2;
 }
 
-// Information about token
+// Information about token.
 message TokenInfo {
   string token = 1;
   string refresh_token = 2;
   google.protobuf.Timestamp token_valid_to = 3;
+}
+
+// Request to validate user JWT token.
+message TokenValidationRequest {
+  string token = 1;
+  string username = 2;
+}
+
+// Response with user JWT token validation response.
+message TokenValidationResponse {
+  common.CommonStatus status = 1;
+  bool validation_result = 2;
 }

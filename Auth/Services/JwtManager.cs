@@ -53,6 +53,47 @@ public class JwtGenerator : IJwtGenerator
         return tokenInfo;
     }
 
+    /// <inheritdoc />
+    public int GetTokenValidityCheckPeriod() => int.Parse(_configuration["Jwt:TokenValidityCheckPeriodInSeconds"]);
+
+    /// <inheritdoc />
+    public JwtTokenInfo RefreshToken(string token, string refreshToken)
+    {
+        // TODO: Read how to generate refresh token
+        var newToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+        return new JwtTokenInfo
+        {
+            Token = new JwtSecurityTokenHandler().WriteToken(newToken),
+            RefreshToken = refreshToken,
+            TokenValidTo = newToken.ValidTo
+        };
+    }
+
+    /// <inheritdoc />
+    public JwtTokenStatus ValidateToken(string token, string username)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var parsedToken = handler.ReadJwtToken(token);
+        
+        // Check token sign
+        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]));
+        if (parsedToken.SigningCredentials.Key != authSigningKey ||
+            parsedToken.SigningCredentials.Algorithm != SecurityAlgorithms.HmacSha256)
+            return JwtTokenStatus.Invalid;
+
+        // Check if token belongs to this user
+        if (parsedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Name)?.Value != username)
+            return JwtTokenStatus.Invalid;
+        
+        // Check issuer and audience
+        if (parsedToken.Audiences.Contains(_configuration["Jwt:Issuer"]) &&
+            parsedToken.Issuer == _configuration["Jwt:Audience"])
+            return JwtTokenStatus.Invalid;
+
+        // Check time token valid to
+        return parsedToken.ValidTo < _dateProvider.UtcNow ? JwtTokenStatus.Expired : JwtTokenStatus.Valid;
+    }
+
     /// <summary>
     ///     Create token from claims
     /// </summary>
