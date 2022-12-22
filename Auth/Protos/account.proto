@@ -4,6 +4,7 @@ option csharp_namespace = "Flamma.Auth";
 
 import "Protos/common.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 package manager;
 
@@ -13,8 +14,15 @@ service AccountManager {
   rpc Register (RegisterRequest) returns (RegisterReply);
   // Log user in
   rpc Login (LoginRequest) returns (LoginResponse);
-  // Validate users JWT token
-  rpc ValidateToken (TokenValidationRequest) returns (TokenValidationResponse);
+  // Refresh token
+  rpc RefreshToken (RefreshTokenRequest) returns (LoginResponse);
+  // Test method with auth
+  rpc Test (google.protobuf.Empty) returns (TestResponse);
+}
+
+// Test response message
+message TestResponse {
+  string message = 1;
 }
 
 // The registration request message containing the users name.
@@ -58,14 +66,8 @@ message TokenInfo {
   google.protobuf.Timestamp token_valid_to = 3;
 }
 
-// Request to validate user JWT token.
-message TokenValidationRequest {
+// Request to refresh user JWT token.
+message RefreshTokenRequest {
   string token = 1;
-  string username = 2;
-}
-
-// Response with user JWT token validation response.
-message TokenValidationResponse {
-  common.CommonStatus status = 1;
-  bool validation_result = 2;
+  string refresh_token = 2;
 }

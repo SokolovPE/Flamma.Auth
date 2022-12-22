@@ -66,12 +66,12 @@ public class MockAccountRepository : IAccountRepository
         Task.FromResult(!_userData.ContainsKey(username));
 
     /// <inheritdoc />
-    public Task<bool> ValidateUser(string username, string passwordHash, CancellationToken token = default) =>
+    public Task<bool> ValidateUserAsync(string username, string passwordHash, CancellationToken token = default) =>
         Task.FromResult(_userData.Any(userData =>
             userData.Value.Username == username && userData.Value.PasswordHash == passwordHash));
 
     /// <inheritdoc />
-    public Task UpdateUserRefreshToken(string username, string refreshToken, DateTime refreshTokenValidTo,
+    public Task UpdateUserRefreshTokenAsync(string username, string refreshToken, DateTime refreshTokenValidTo,
         CancellationToken token = default)
     {
         if (!_userData.ContainsKey(username))
@@ -87,7 +87,7 @@ public class MockAccountRepository : IAccountRepository
     }
 
     /// <inheritdoc />
-    public Task<string> GetUserRefreshToken(string username, CancellationToken token = default)
+    public Task<string> GetUserRefreshTokenAsync(string username, CancellationToken token = default)
     {
         if (!_userData.ContainsKey(username))
         {
@@ -99,7 +99,7 @@ public class MockAccountRepository : IAccountRepository
     }
 
     /// <inheritdoc />
-    public Task<byte[]> GetUserSalt(string username, CancellationToken token = default)
+    public Task<byte[]> GetUserSaltAsync(string username, CancellationToken token = default)
     {
         if (!_userData.ContainsKey(username))
         {
@@ -107,5 +107,17 @@ public class MockAccountRepository : IAccountRepository
         }
 
         return Task.FromResult(_userData[username].Salt);
+    }
+
+    /// <inheritdoc />
+    public Task<UserData> GetUserDataAsync(string username, CancellationToken token = default)
+    {
+        if (!_userData.ContainsKey(username))
+        {
+            throw new InvalidOperationException($"User with username {username} was not found");
+        }
+        
+        var item = _userData[username];
+        return Task.FromResult(item);
     }
 }

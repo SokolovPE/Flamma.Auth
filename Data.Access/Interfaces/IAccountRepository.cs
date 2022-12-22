@@ -20,21 +20,26 @@ public interface IAccountRepository
     /// <summary>
     ///     Validate user over database
     /// </summary>
-    Task<bool> ValidateUser(string username, string passwordHash, CancellationToken token = default);
+    Task<bool> ValidateUserAsync(string username, string passwordHash, CancellationToken token = default);
 
     /// <summary>
     ///     Update refresh token information for given username
     /// </summary>
-    Task UpdateUserRefreshToken(string username, string refreshToken, DateTime refreshTokenValidTo,
+    Task UpdateUserRefreshTokenAsync(string username, string refreshToken, DateTime refreshTokenValidTo,
         CancellationToken token = default);
 
     /// <summary>
     ///     Get refresh token for given username
     /// </summary>
-    Task<string> GetUserRefreshToken(string username, CancellationToken token = default);
+    Task<string> GetUserRefreshTokenAsync(string username, CancellationToken token = default);
 
     /// <summary>
     ///     Get salt for given username
     /// </summary>
-    Task<byte[]> GetUserSalt(string username, CancellationToken token = default);
+    Task<byte[]> GetUserSaltAsync(string username, CancellationToken token = default);
+
+    /// <summary>
+    ///     Get user data by given username
+    /// </summary>
+    Task<UserData> GetUserDataAsync(string username, CancellationToken token = default);
 }

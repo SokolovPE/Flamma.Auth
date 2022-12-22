@@ -4,9 +4,22 @@ using Flamma.Auth.Data.Access.Extensions;
 using Flamma.Auth.Extensions;
 using Flamma.Auth.Mappings;
 using Flamma.Auth.Services;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure addresses
+builder.WebHost.ConfigureKestrel(configureOptions =>
+{
+    configureOptions.ListenAnyIP(5010, o => o.Protocols = HttpProtocols.Http1);
+    configureOptions.ListenAnyIP(5011, o =>
+    {
+        o.Protocols = HttpProtocols.Http1;
+        o.UseHttps();
+    });
+    configureOptions.ListenAnyIP(5013, o => o.Protocols = HttpProtocols.Http2);
+});
 
 // Add serilog logging
 builder.Host
@@ -18,6 +31,9 @@ builder.Host
 // Add services to the container
 builder.Services.AddCoreServices();
 builder.Services.AddJwt(builder.Configuration);
+
+// Add cache
+builder.Services.AddCache(builder.Configuration);
 
 // Add data engine
 builder.Services
@@ -39,7 +55,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapGrpcReflectionService();
-    //app.Services.AddSeeder(app.Configuration);
+    app.Services.AddSeeder(app.Configuration);
 }
 // Configure the HTTP request pipeline
 app.MapGrpcService<AccountManagerService>();

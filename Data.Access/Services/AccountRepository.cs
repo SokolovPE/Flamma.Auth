@@ -32,7 +32,7 @@ public class AccountRepository : IAccountRepository
     }
     
     /// <inheritdoc />
-    public async Task<bool> ValidateUser(string username, string passwordHash, CancellationToken token = default)
+    public async Task<bool> ValidateUserAsync(string username, string passwordHash, CancellationToken token = default)
     {
         var userValid = await _userDataRepository.ExistsAsync(
             filter: userData => userData.Username == username && userData.PasswordHash == passwordHash, token);
@@ -40,7 +40,7 @@ public class AccountRepository : IAccountRepository
     }
 
     /// <inheritdoc />
-    public async Task<byte[]> GetUserSalt(string username, CancellationToken token = default)
+    public async Task<byte[]> GetUserSaltAsync(string username, CancellationToken token = default)
     {
         var user = await _userDataRepository.GetAsync(filter: userData => userData.Username == username, track: false,
             token);
@@ -54,7 +54,7 @@ public class AccountRepository : IAccountRepository
     }
 
     /// <inheritdoc />
-    public async Task UpdateUserRefreshToken(string username, string refreshToken, DateTime refreshTokenValidTo,
+    public async Task UpdateUserRefreshTokenAsync(string username, string refreshToken, DateTime refreshTokenValidTo,
         CancellationToken token = default)
     {
         var request =
@@ -71,7 +71,7 @@ public class AccountRepository : IAccountRepository
     }
 
     /// <inheritdoc />
-    public async Task<string> GetUserRefreshToken(string username, CancellationToken token = default)
+    public async Task<string> GetUserRefreshTokenAsync(string username, CancellationToken token = default)
     {
         var request =
             await _userDataRepository.GetAsync(filter: item => item.Username == username, track: false, token: token);
@@ -82,5 +82,19 @@ public class AccountRepository : IAccountRepository
         }
 
         return item.RefreshToken;
+    }
+
+    /// <inheritdoc />
+    public async Task<UserData> GetUserDataAsync(string username, CancellationToken token = default)
+    {
+        var request =
+            await _userDataRepository.GetAsync(filter: item => item.Username == username, track: false, token: token);
+        var item = request.FirstOrDefault();
+        if (item is null)
+        {
+            throw new InvalidOperationException($"User with username {username} was not found");
+        }
+
+        return item;
     }
 }

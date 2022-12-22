@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using AzisFood.CacheService.Redis.Interfaces;
+using EasyCaching.Core;
 using Flamma.Auth.Common.Interfaces;
 using Flamma.Auth.Data.Access.Interfaces;
 using Flamma.Auth.Interfaces;
@@ -15,6 +15,11 @@ namespace Flamma.Auth.Services;
 public class CoreAccountManager : IAccountManager
 {
     /// <summary>
+    ///     Main cache alias for accounts
+    /// </summary>
+    private const string CacheAlias = "Redis";
+    
+    /// <summary>
     ///     Logger
     /// </summary>
     /// <remarks>Protected for possible decorators</remarks>
@@ -28,9 +33,8 @@ public class CoreAccountManager : IAccountManager
 
     /// <summary>
     ///     Cache service
-    ///     TODO: Replace with another cache package, in airplane have no wi-fi to use another
     /// </summary>
-    private readonly IRedisCacheService _cacheService;
+    private readonly IEasyCachingProviderFactory _cacheFactory;
 
     /// <summary>
     ///     Registration request validator
@@ -50,15 +54,25 @@ public class CoreAccountManager : IAccountManager
     /// <summary>
     ///     Token generator
     /// </summary>
-    private readonly IJwtGenerator _jwtManager;
+    private readonly IJwtManager _jwtManager;
+
+    /// <summary>
+    ///     Application configuration
+    /// </summary>
+    private readonly IConfiguration _configuration;
+
+    /// <summary>
+    ///     Date provider
+    /// </summary>
+    private readonly IDateProvider _dateProvider;
 
     /// <summary>
     ///     .ctor
     /// </summary>
     public CoreAccountManager(ILogger<CoreAccountManager> logger,
         IValidator<Models.RegisterRequest> registrationRequestValidator,
-        IHasher hasher, IAccountRepository accountRepository, IMapper mapper, IJwtGenerator jwtManager,
-        IRedisCacheService cacheService)
+        IHasher hasher, IAccountRepository accountRepository, IMapper mapper, IJwtManager jwtManager,
+        IEasyCachingProviderFactory cacheFactory, IConfiguration configuration, IDateProvider dateProvider)
     {
         Logger = logger;
         _registrationRequestValidator = registrationRequestValidator;
@@ -66,7 +80,9 @@ public class CoreAccountManager : IAccountManager
         _accountRepository = accountRepository;
         _mapper = mapper;
         _jwtManager = jwtManager;
-        _cacheService = cacheService;
+        _cacheFactory = cacheFactory;
+        _configuration = configuration;
+        _dateProvider = dateProvider;
     }
 
     /// <inheritdoc />
@@ -132,10 +148,10 @@ public class CoreAccountManager : IAccountManager
         try
         {
             // Calculate password hash
-            var userSalt = await _accountRepository.GetUserSalt(username, token);
+            var userSalt = await _accountRepository.GetUserSaltAsync(username, token);
             var passwordHash = _hasher.HashString(password, userSalt);
 
-            var isUserValid = await _accountRepository.ValidateUser(username, passwordHash, token);
+            var isUserValid = await _accountRepository.ValidateUserAsync(username, passwordHash, token);
             if (!isUserValid)
             {
                 throw new InvalidOperationException($"User validation failed for {username}");
@@ -143,6 +159,10 @@ public class CoreAccountManager : IAccountManager
 
             // TODO: Get Roles here and create claims, for now no need
             var jwtTokenInfo = _jwtManager.GenerateToken(username);
+            
+            _ = int.TryParse(_configuration["Jwt:RefreshTokenValidityInDays"], out var refreshTokenValidityInDays);
+            await _accountRepository.UpdateUserRefreshTokenAsync(username, jwtTokenInfo.RefreshToken,
+                _dateProvider.UtcNow.AddDays(refreshTokenValidityInDays), token);
 
             return new LoginResult
             {
@@ -159,47 +179,37 @@ public class CoreAccountManager : IAccountManager
             };
         }
     }
-    
+
     /// <inheritdoc />
-    public async Task<bool> ValidateTokenAsync(string userToken, string username, CancellationToken token = default)
+    public async Task<LoginResult> RefreshTokenAsync(string userToken, string userRefreshToken,
+        CancellationToken token = default)
     {
         try
         {
-            // Check in cache is token presented, if it is no need to validate
-            var cachedToken = await _cacheService.GetAsync<string>($"user_token:{username}");
-            if (!string.IsNullOrWhiteSpace(cachedToken))
-                return true;
-            
-            // If it's not - validate it
-            var tokenValidationResult =  _jwtManager.ValidateToken(userToken, username);
+            var username = _jwtManager.ExtractUsername(userToken);
+            var userData = await _accountRepository.GetUserDataAsync(username, token);
+            if (userData == default || userData.RefreshToken != userRefreshToken ||
+                userData.RefreshTokenExpiryTime <= _dateProvider.UtcNow)
+                throw new ArgumentException("Invalid access token or refresh token");
 
-            switch (tokenValidationResult)
+            var refreshedTokenInfo = _jwtManager.RefreshToken(userToken);
+            _ = int.TryParse(_configuration["Jwt:RefreshTokenValidityInDays"], out var refreshTokenValidityInDays);
+            await _accountRepository.UpdateUserRefreshTokenAsync(username, refreshedTokenInfo.RefreshToken,
+                _dateProvider.UtcNow.AddDays(refreshTokenValidityInDays), token);
+            return new LoginResult
             {
-                // If token is valid - store in cache
-                case JwtTokenStatus.Valid:
-                    await _cacheService.SetAsync($"user_token:{username}", userToken,
-                        TimeSpan.FromSeconds(_jwtManager.GetTokenValidityCheckPeriod()));
-                    break;
-                // If token is expired - refresh it
-                case JwtTokenStatus.Expired:
-                {
-                    var refreshToken = await _accountRepository.GetUserRefreshToken(username, token);
-                    var refreshedToken = _jwtManager.RefreshToken(userToken, refreshToken);
-                    return await ValidateTokenAsync(refreshedToken.Token, username, token);
-                }
-                case JwtTokenStatus.Invalid:
-                    return false;
-                default:
-                    throw new ArgumentOutOfRangeException(
-                        $"Current token validation status is not supported yet, status: {tokenValidationResult}");
-            }
-
-            return true;
+                Success = true,
+                TokenInfo = refreshedTokenInfo
+            };
         }
         catch (Exception e)
         {
-            Logger.LogError(e, "Error during token validation, user: {Username}, token: {Token}", username, userToken);
-            throw;
+            Logger.LogError(e, "Error during refresh token: {Token} using refresh token: {RefreshToken}", userToken,
+                userRefreshToken);
+            return new LoginResult
+            {
+                Success = false
+            };
         }
     }
 }

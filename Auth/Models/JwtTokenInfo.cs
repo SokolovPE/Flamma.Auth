@@ -16,7 +16,7 @@ public class JwtTokenInfo
     public string RefreshToken { get; set; }
 
     /// <summary>
-    ///     Refresh token expiration time
+    ///     Token expiration time
     /// </summary>
     public DateTime TokenValidTo { get; set; }
 }

@@ -2,6 +2,7 @@
 using Flamma.Auth.Interfaces;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Flamma.Auth.Services;
 
@@ -84,27 +85,33 @@ public class AccountManagerService : AccountManager.AccountManagerBase
     }
 
     /// <summary>
-    ///     Validate users JWT token
+    ///     Refresh user access token
     /// </summary>
-    public override async Task<TokenValidationResponse> ValidateToken(TokenValidationRequest request,
-        ServerCallContext context)
+    public override async Task<LoginResponse> RefreshToken(RefreshTokenRequest request, ServerCallContext context)
     {
+        _logger.LogInformation("New refresh token request: {@RefreshRequest}", request);
         try
         {
-            var tokenValid =
-                await _accountManager.ValidateTokenAsync(request.Token, request.Username, context.CancellationToken);
-            return new TokenValidationResponse
-            {
-                Status = CommonStatus.Success,
-                ValidationResult = tokenValid
-            };
+            var handleResult =
+                await _accountManager.RefreshTokenAsync(request.Token, request.RefreshToken, context.CancellationToken);
+            var result = _mapper.Map<LoginResponse>(handleResult);
+            return result;
         }
-        catch (Exception)
+        catch (InvalidOperationException)
         {
-            return new TokenValidationResponse
+            return new LoginResponse
             {
-                Status = CommonStatus.Fail
+                Status = CommonStatus.Invalid
             };
         }
+    }
+
+    [Authorize]
+    public override async Task<TestResponse> Test(Empty request, ServerCallContext context)
+    {
+        return new TestResponse
+        {
+            Message = "Hello world"
+        };
     }
 }

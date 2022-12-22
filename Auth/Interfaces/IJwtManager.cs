@@ -5,7 +5,7 @@ namespace Flamma.Auth.Interfaces;
 /// <summary>
 ///     Service which operates jwt token operations
 /// </summary>
-public interface IJwtGenerator
+public interface IJwtManager
 {
     /// <summary>
     ///     Generate token for user
@@ -13,18 +13,12 @@ public interface IJwtGenerator
     public JwtTokenInfo GenerateToken(string username);
 
     /// <summary>
-    ///     Validate jwt token
-    /// </summary>
-    JwtTokenStatus ValidateToken(string token, string username);
-
-    /// <summary>
-    ///     Get period of jwt token validation
-    /// </summary>
-    /// <returns>Period of validation in seconds</returns>
-    int GetTokenValidityCheckPeriod();
-
-    /// <summary>
     ///     Refresh given token
     /// </summary>
-    JwtTokenInfo RefreshToken(string token, string refreshToken);
+    JwtTokenInfo RefreshToken(string token);
+
+    /// <summary>
+    ///     Extract username from token
+    /// </summary>
+    string ExtractUsername(string token);
 }

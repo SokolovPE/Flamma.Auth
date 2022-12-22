@@ -31,11 +31,8 @@ public interface IAccountManager
     public Task<LoginResult> HandleLoginAsync(string username, string password, CancellationToken token = default);
 
     /// <summary>
-    ///     Validate user token to authorize some action
+    ///     Refresh user access token
     /// </summary>
-    /// <param name="userToken">JWT token which belongs to user</param>
-    /// <param name="username">Identifier of user</param>
-    /// <param name="token">Cancellation token</param>
-    /// <returns>Result of token validation</returns>
-    public Task<bool> ValidateTokenAsync(string userToken, string username, CancellationToken token = default);
+    public Task<LoginResult> RefreshTokenAsync(string userToken, string userRefreshToken,
+        CancellationToken token = default);
 }

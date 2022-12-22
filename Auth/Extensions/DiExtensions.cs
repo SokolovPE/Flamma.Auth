@@ -1,8 +1,11 @@
 ﻿using System.Text;
+using EasyCaching.Core.Configurations;
+using EasyCaching.Serialization.SystemTextJson.Configurations;
 using Flamma.Auth.Common.Interfaces;
 using Flamma.Auth.Common.Services;
 using Flamma.Auth.Data.Access.Extensions;
 using Flamma.Auth.Interfaces;
+using Flamma.Auth.Models;
 using Flamma.Auth.Services;
 using Flamma.Auth.Validators;
 using FluentValidation;
@@ -27,7 +30,7 @@ public static class DiExtensions
         serviceCollection.AddScoped<IAccountManager, Services.CoreAccountManager>();
         serviceCollection.AddSingleton<IDateProvider, BaseDateProvider>();
         serviceCollection.AddSingleton<IHasher, Hasher>();
-        serviceCollection.AddSingleton<IJwtGenerator, Services.JwtGenerator>();
+        serviceCollection.AddSingleton<IJwtManager, Services.JwtManager>();
         
         // Add validators
         serviceCollection.AddScoped<IValidator<Models.RegisterRequest>, RegisterRequestValidator>();
@@ -61,6 +64,25 @@ public static class DiExtensions
             };
         });
 
+        return serviceCollection;
+    }
+
+    /// <summary>
+    ///     Add Cache
+    /// </summary>
+    public static IServiceCollection AddCache(this IServiceCollection serviceCollection, IConfiguration configuration)
+    {
+        var endpoints = configuration.GetSection("CacheConfiguration").Get<CacheEndpointInfo[]>();
+        serviceCollection.AddEasyCaching(opts =>
+        {
+            foreach (var endpoint in endpoints)
+            {
+                opts.UseRedis(config =>
+                {
+                    config.DBConfig.Endpoints.Add(new ServerEndPoint(endpoint.Url, endpoint.Port));
+                }, endpoint.Alias).WithSystemTextJson(endpoint.Alias);
+            }
+        });
         return serviceCollection;
     }
 }
