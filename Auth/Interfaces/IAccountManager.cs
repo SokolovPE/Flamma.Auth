@@ -35,4 +35,29 @@ public interface IAccountManager
     /// </summary>
     public Task<LoginResult> RefreshTokenAsync(string userToken, string userRefreshToken,
         CancellationToken token = default);
+    
+    /// <summary>
+    ///     Revoke user token
+    /// </summary>
+    Task RevokeTokenAsync(string username, CancellationToken token = default);
+    
+    /// <summary>
+    ///     Revoke all user tokens
+    /// </summary>
+    Task RevokeAllTokensAsync(CancellationToken token = default);
+
+    /// <summary>
+    ///     Ban user for given period
+    /// </summary>
+    Task BanUserAsync(Guid userId, TimeSpan banPeriod, CancellationToken token = default);
+
+    /// <summary>
+    ///     Ban user permanently
+    /// </summary>
+    Task BanUserAsync(Guid userId, CancellationToken token = default);
+
+    /// <summary>
+    ///     Unban user
+    /// </summary>
+    Task UnbanUserAsync(Guid userId, CancellationToken token = default);
 }

@@ -1,4 +1,5 @@
-﻿using Flamma.Auth.Data.Access.Models;
+﻿using System.Linq.Expressions;
+using Flamma.Auth.Data.Access.Models;
 
 namespace Flamma.Auth.Data.Access.Interfaces;
 
@@ -11,6 +12,11 @@ public interface IAccountRepository
     ///     Create new user
     /// </summary>
     public Task CreateUserAsync(UserData userData, CancellationToken token = default);
+
+    /// <summary>
+    ///     Update user data
+    /// </summary>
+    Task UpdateUserAsync(Guid id, UserData userData, CancellationToken token);
 
     /// <summary>
     ///     Check uniqueness of username
@@ -42,4 +48,15 @@ public interface IAccountRepository
     ///     Get user data by given username
     /// </summary>
     Task<UserData> GetUserDataAsync(string username, CancellationToken token = default);
+
+    /// <summary>
+    ///     Get users by given filter
+    /// </summary>
+    Task<IEnumerable<UserData>> GetUsersAsync(Expression<Func<UserData, bool>> filter = null,
+        CancellationToken token = default);
+
+    /// <summary>
+    ///     Get user by given id
+    /// </summary>
+    Task<UserData> GetUserAsync(Guid id, CancellationToken token = default);
 }

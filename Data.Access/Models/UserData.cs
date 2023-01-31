@@ -38,4 +38,9 @@ public class UserData : PgRepoEntity<AuthDbContext>
     ///     Lifetime of refresh token
     /// </summary>
     public DateTime RefreshTokenExpiryTime { get; set; }
+
+    /// <summary>
+    ///     Date user is banned till
+    /// </summary>
+    public DateTime? BannedTill { get; set; } = null;
 }

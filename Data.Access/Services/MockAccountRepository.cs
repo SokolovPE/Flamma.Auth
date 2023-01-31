@@ -1,4 +1,5 @@
-﻿using Flamma.Auth.Data.Access.Interfaces;
+﻿using System.Linq.Expressions;
+using Flamma.Auth.Data.Access.Interfaces;
 using Flamma.Auth.Data.Access.Models;
 
 namespace Flamma.Auth.Data.Access.Services;
@@ -62,6 +63,14 @@ public class MockAccountRepository : IAccountRepository
     }
 
     /// <inheritdoc />
+    public Task UpdateUserAsync(Guid id, UserData userData, CancellationToken token)
+    {
+        if (!_userData.ContainsKey(userData.Username)) return Task.CompletedTask;
+        _userData[userData.Username] = userData;
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
     public Task<bool> IsUsernameUniqueAsync(string username, CancellationToken token = default) =>
         Task.FromResult(!_userData.ContainsKey(username));
 
@@ -119,5 +128,23 @@ public class MockAccountRepository : IAccountRepository
         
         var item = _userData[username];
         return Task.FromResult(item);
+    }
+
+    /// <inheritdoc />
+    public Task<IEnumerable<UserData>> GetUsersAsync(Expression<Func<UserData, bool>> filter = null, CancellationToken token = default)
+    {
+        var query = _userData.Select(x => x.Value);
+        if (filter != null)
+            query = query.Where(filter.Compile());
+
+        var data = query.ToList();
+        return Task.FromResult<IEnumerable<UserData>>(data);
+    }
+
+    /// <inheritdoc />
+    public Task<UserData> GetUserAsync(Guid id, CancellationToken token = default)
+    {
+        var data = _userData.FirstOrDefault(data => data.Value.Id == id);
+        return Task.FromResult(data.Value);
     }
 }

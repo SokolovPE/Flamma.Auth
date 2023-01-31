@@ -212,4 +212,44 @@ public class CoreAccountManager : IAccountManager
             };
         }
     }
+
+    /// <inheritdoc />
+    public async Task RevokeTokenAsync(string username, CancellationToken token = default)
+    {
+        await _accountRepository.UpdateUserRefreshTokenAsync(username, null, default, token);
+    }
+
+    /// <inheritdoc />
+    public async Task RevokeAllTokensAsync(CancellationToken token = default)
+    {
+        var users = await _accountRepository.GetUsersAsync(token: token);
+        foreach (var user in users)
+        {
+            await RevokeTokenAsync(user.Username, token);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task BanUserAsync(Guid userId, TimeSpan banPeriod, CancellationToken token = default)
+    {
+        var user = await _accountRepository.GetUserAsync(userId, token: token);
+        user.BannedTill = _dateProvider.UtcNow.Add(banPeriod);
+        await _accountRepository.UpdateUserAsync(userId, user, token);
+    }
+
+    /// <inheritdoc />
+    public async Task BanUserAsync(Guid userId, CancellationToken token = default)
+    {
+        var user = await _accountRepository.GetUserAsync(userId, token: token);
+        user.BannedTill = _dateProvider.MaxValue;
+        await _accountRepository.UpdateUserAsync(userId, user, token);
+    }
+
+    /// <inheritdoc />
+    public async Task UnbanUserAsync(Guid userId, CancellationToken token = default)
+    {
+        var user = await _accountRepository.GetUserAsync(userId, token: token);
+        user.BannedTill = null;
+        await _accountRepository.UpdateUserAsync(userId, user, token);
+    }
 }

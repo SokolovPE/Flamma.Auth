@@ -14,4 +14,9 @@ public interface IDateProvider
     ///     Get current universal date and time
     /// </summary>
     public DateTime UtcNow { get; }
+    
+    /// <summary>
+    ///     Get maximum date and time
+    /// </summary>
+    public DateTime MaxValue { get; }
 }

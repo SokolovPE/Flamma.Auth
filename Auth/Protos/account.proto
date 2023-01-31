@@ -16,6 +16,16 @@ service AccountManager {
   rpc Login (LoginRequest) returns (LoginResponse);
   // Refresh token
   rpc RefreshToken (RefreshTokenRequest) returns (LoginResponse);
+  // Revoke token
+  rpc RevokeToken (RevokeTokenRequest) returns (.google.protobuf.Empty);
+  // Revoke all tokens
+  rpc RevokeAllTokens (.google.protobuf.Empty) returns (.google.protobuf.Empty);
+  // Ban user for some period
+  rpc Ban (BanRequest) returns (.google.protobuf.Empty);
+  // Ban user permanently
+  rpc PermanentBan (UserIdRequest) returns (.google.protobuf.Empty);
+  // Unban user
+  rpc Unban (UserIdRequest) returns (.google.protobuf.Empty);
   // Test method with auth
   rpc Test (google.protobuf.Empty) returns (TestResponse);
 }
@@ -70,4 +80,20 @@ message TokenInfo {
 message RefreshTokenRequest {
   string token = 1;
   string refresh_token = 2;
+}
+
+// Request to revoke user token.
+message RevokeTokenRequest {
+  string token = 1;
+}
+
+// Request to ban user for fixed period
+message BanRequest {
+  string user_id = 1;
+  google.protobuf.Timestamp ban_period = 2;
+}
+
+// Request to ban user permanently
+message UserIdRequest {
+  string user_id = 1;
 }

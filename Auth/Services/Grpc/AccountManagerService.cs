@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace Flamma.Auth.Services;
 
 /// <summary>
-///     Service to managet user account
+///     Service to manage user account
 /// </summary>
 public class AccountManagerService : AccountManager.AccountManagerBase
 {
@@ -87,6 +87,7 @@ public class AccountManagerService : AccountManager.AccountManagerBase
     /// <summary>
     ///     Refresh user access token
     /// </summary>
+    [Authorize]
     public override async Task<LoginResponse> RefreshToken(RefreshTokenRequest request, ServerCallContext context)
     {
         _logger.LogInformation("New refresh token request: {@RefreshRequest}", request);
@@ -103,6 +104,118 @@ public class AccountManagerService : AccountManager.AccountManagerBase
             {
                 Status = CommonStatus.Invalid
             };
+        }
+    }
+
+    /// <inheritdoc />
+    [Authorize]
+    public override async Task<Empty> RevokeToken(RevokeTokenRequest request, ServerCallContext context)
+    {
+        _logger.LogInformation("New revoke token request: {@RevokeTokenRequest}", request);
+        await _accountManager.RevokeTokenAsync(request.Token, context.CancellationToken);
+        return new Empty();
+    }
+
+    /// <inheritdoc />
+    [Authorize]
+    public override async Task<Empty> RevokeAllTokens(Empty request, ServerCallContext context)
+    {
+        _logger.LogInformation("New revoke all tokens request");
+        await _accountManager.RevokeAllTokensAsync(context.CancellationToken);
+        return new Empty();
+    }
+
+    /// <inheritdoc />
+    [Authorize]
+    public override async Task<Empty> Ban(BanRequest request, ServerCallContext context)
+    {
+        _logger.LogInformation("New ban user request: {@BanRequest}", request);
+        var idParseSuccessful = Guid.TryParse(request.UserId, out var userId);
+        if (!idParseSuccessful)
+        {
+            _logger.LogWarning("Impossible to parse user id {UserId}", request.UserId);
+            throw new RpcException(new Status(StatusCode.InvalidArgument,
+                $"Impossible to parse user id: {request.UserId}"));
+        }
+
+        try
+        {
+            await _accountManager.BanUserAsync(userId, request.BanPeriod.ToDateTimeOffset().TimeOfDay,
+                context.CancellationToken);
+            return new Empty();
+        }
+        catch (InvalidOperationException e)
+        {
+            _logger.LogError(e, "User to ban was not found, Request: {@BanRequest}", request);
+            throw new RpcException(new Status(StatusCode.InvalidArgument,
+                $"User with id {request.UserId} was not found"));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Unhandled exception during ban of user, Request: {@BanRequest}", request);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    [Authorize]
+    public override async Task<Empty> PermanentBan(UserIdRequest request, ServerCallContext context)
+    {
+        _logger.LogInformation("New permanent ban user request: {@BanRequest}", request);
+        var idParseSuccessful = Guid.TryParse(request.UserId, out var userId);
+        if (!idParseSuccessful)
+        {
+            _logger.LogWarning("Impossible to parse user id {UserId}", request.UserId);
+            throw new RpcException(new Status(StatusCode.InvalidArgument,
+                $"Impossible to parse user id: {request.UserId}"));
+        }
+
+        try
+        {
+            await _accountManager.BanUserAsync(userId, context.CancellationToken);
+            return new Empty();
+        }
+        catch (InvalidOperationException e)
+        {
+            _logger.LogError(e, "User to permanently ban was not found, Request: {@BanRequest}", request);
+            throw new RpcException(new Status(StatusCode.InvalidArgument,
+                $"User with id {request.UserId} was not found"));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Unhandled exception during permanent ban of user, Request: {@BanRequest}", request);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    [Authorize]
+    public override async Task<Empty> Unban(UserIdRequest request, ServerCallContext context)
+    {
+        _logger.LogInformation("New unban user request: {@UnbanRequest}", request);
+        var idParseSuccessful = Guid.TryParse(request.UserId, out var userId);
+        if (!idParseSuccessful)
+        {
+            _logger.LogWarning("Impossible to parse user id {UserId}", request.UserId);
+            throw new RpcException(new Status(StatusCode.InvalidArgument,
+                $"Impossible to parse user id: {request.UserId}"));
+        }
+
+        try
+        {
+            await _accountManager.UnbanUserAsync(userId, context.CancellationToken);
+            return new Empty();
+        }
+        catch (InvalidOperationException e)
+        {
+            _logger.LogError(e, "User to unban was not found, Request: {@UnbanRequest}", request);
+            throw new RpcException(new Status(StatusCode.InvalidArgument,
+                $"User with id {request.UserId} was not found"));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Unhandled exception during unban of user, Request: {@UnbanRequest}", request);
+            throw;
         }
     }
 

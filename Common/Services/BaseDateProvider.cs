@@ -12,4 +12,7 @@ public class BaseDateProvider : IDateProvider
     
     /// <inheritdoc />
     public DateTime UtcNow => DateTime.UtcNow;
+    
+    /// <inheritdoc />
+    public DateTime MaxValue => DateTime.MaxValue;
 }

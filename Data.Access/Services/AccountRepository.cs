@@ -1,4 +1,5 @@
-﻿using AzisFood.DataEngine.Abstractions.Interfaces;
+﻿using System.Linq.Expressions;
+using AzisFood.DataEngine.Abstractions.Interfaces;
 using Flamma.Auth.Data.Access.Interfaces;
 using Flamma.Auth.Data.Access.Models;
 
@@ -22,6 +23,10 @@ public class AccountRepository : IAccountRepository
     /// <inheritdoc />
     public async Task CreateUserAsync(UserData userData, CancellationToken token = default) =>
         await _userDataRepository.CreateAsync(userData, token);
+
+    /// <inheritdoc />
+    public async Task UpdateUserAsync(Guid id, UserData userData, CancellationToken token) =>
+        await _userDataRepository.UpdateAsync(id, userData, token);
 
     /// <inheritdoc />
     public async Task<bool> IsUsernameUniqueAsync(string username, CancellationToken token = default)
@@ -96,5 +101,18 @@ public class AccountRepository : IAccountRepository
         }
 
         return item;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<UserData>> GetUsersAsync(Expression<Func<UserData, bool>> filter = null,
+        CancellationToken token = default) => await _userDataRepository.GetAsync(filter, true, token);
+
+    /// <inheritdoc />
+    public async Task<UserData> GetUserAsync(Guid id, CancellationToken token = default)
+    {
+        var data = await _userDataRepository.GetAsync(id, token: token);
+        if(data == null)
+            throw new InvalidOperationException($"User with id {id} was not found");
+        return data;
     }
 }
