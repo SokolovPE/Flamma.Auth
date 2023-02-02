@@ -60,4 +60,9 @@ public interface IAccountManager
     ///     Unban user
     /// </summary>
     Task UnbanUserAsync(Guid userId, CancellationToken token = default);
+
+    /// <summary>
+    ///     Check is user banned or not
+    /// </summary>
+    Task<UserBanInfo> IsUserBannedAsync(Guid userId, CancellationToken token = default);
 }

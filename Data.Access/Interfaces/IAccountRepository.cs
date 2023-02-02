@@ -11,7 +11,7 @@ public interface IAccountRepository
     /// <summary>
     ///     Create new user
     /// </summary>
-    public Task CreateUserAsync(UserData userData, CancellationToken token = default);
+    Task CreateUserAsync(UserData userData, CancellationToken token = default);
 
     /// <summary>
     ///     Update user data
@@ -21,7 +21,7 @@ public interface IAccountRepository
     /// <summary>
     ///     Check uniqueness of username
     /// </summary>
-    public Task<bool> IsUsernameUniqueAsync(string username, CancellationToken token = default);
+    Task<bool> IsUsernameUniqueAsync(string username, CancellationToken token = default);
 
     /// <summary>
     ///     Validate user over database
@@ -59,4 +59,9 @@ public interface IAccountRepository
     ///     Get user by given id
     /// </summary>
     Task<UserData> GetUserAsync(Guid id, CancellationToken token = default);
+
+    /// <summary>
+    ///     Get user ban timestamp
+    /// </summary>
+    Task<DateTime?> GetUserBanDateAsync(Guid id, CancellationToken token = default);
 }

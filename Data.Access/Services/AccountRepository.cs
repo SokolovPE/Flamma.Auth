@@ -2,6 +2,7 @@
 using AzisFood.DataEngine.Abstractions.Interfaces;
 using Flamma.Auth.Data.Access.Interfaces;
 using Flamma.Auth.Data.Access.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flamma.Auth.Data.Access.Services;
 
@@ -10,12 +11,12 @@ namespace Flamma.Auth.Data.Access.Services;
 /// </summary>
 public class AccountRepository : IAccountRepository
 {
-    private readonly IBaseRepository<UserData> _userDataRepository;
+    private readonly IBaseQueryableRepository<UserData> _userDataRepository;
 
     /// <summary>
     ///     .ctor
     /// </summary>
-    public AccountRepository(IBaseRepository<UserData> userDataRepository)
+    public AccountRepository(IBaseQueryableRepository<UserData> userDataRepository)
     {
         _userDataRepository = userDataRepository;
     }
@@ -114,5 +115,15 @@ public class AccountRepository : IAccountRepository
         if(data == null)
             throw new InvalidOperationException($"User with id {id} was not found");
         return data;
+    }
+
+    /// <inheritdoc />
+    public async Task<DateTime?> GetUserBanDateAsync(Guid id, CancellationToken token = default)
+    {
+        var bannedTill = await _userDataRepository.GetQueryable(filter: userData => userData.Id == id)
+            .Select(userData => userData.BannedTill)
+            .FirstOrDefaultAsync(token);
+        return bannedTill;
+
     }
 }

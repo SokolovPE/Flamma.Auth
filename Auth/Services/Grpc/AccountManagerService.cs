@@ -219,6 +219,45 @@ public class AccountManagerService : AccountManager.AccountManagerBase
         }
     }
 
+    /// <inheritdoc />
+    [Authorize]
+    public override async Task<IsBannedResponse> IsBanned(UserIdRequest request, ServerCallContext context)
+    {
+        _logger.LogInformation("New ban state check request: {@IsBannedRequest}", request);
+        var idParseSuccessful = Guid.TryParse(request.UserId, out var userId);
+        if (!idParseSuccessful)
+        {
+            _logger.LogWarning("Impossible to parse user id {UserId}", request.UserId);
+            throw new RpcException(new Status(StatusCode.InvalidArgument,
+                $"Impossible to parse user id: {request.UserId}"));
+        }
+        try
+        {
+            var info = await _accountManager.IsUserBannedAsync(userId, context.CancellationToken);
+            return _mapper.Map<IsBannedResponse>(info);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Unhandled exception during ban state check of user, Request: {@IsBannedRequest}",
+                request);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    [Authorize]
+    public override async Task<UserInfoResponse> GetUserById(UserIdRequest request, ServerCallContext context)
+    {
+        return await base.GetUserById(request, context);
+    }
+
+    /// <inheritdoc />
+    [Authorize]
+    public override async Task<UserInfoResponse> GetUserByUsername(UserNameRequest request, ServerCallContext context)
+    {
+        return await base.GetUserByUsername(request, context);
+    }
+
     [Authorize]
     public override async Task<TestResponse> Test(Empty request, ServerCallContext context)
     {

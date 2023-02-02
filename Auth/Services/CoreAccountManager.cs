@@ -121,6 +121,7 @@ public class CoreAccountManager : IAccountManager
             var registrationData = _mapper.Map<Data.Access.Models.UserData>(request);
             registrationData.PasswordHash = passwordHash;
             registrationData.Salt = salt;
+            registrationData.RegisteredSince = _dateProvider.UtcNow;
             
             await _accountRepository.CreateUserAsync(registrationData, token);
 
@@ -251,5 +252,17 @@ public class CoreAccountManager : IAccountManager
         var user = await _accountRepository.GetUserAsync(userId, token: token);
         user.BannedTill = null;
         await _accountRepository.UpdateUserAsync(userId, user, token);
+    }
+
+    /// <inheritdoc />
+    public async Task<UserBanInfo> IsUserBannedAsync(Guid userId, CancellationToken token = default)
+    {
+        var bannedTill = await _accountRepository.GetUserBanDateAsync(userId, token);
+        return new UserBanInfo
+        {
+            UserId = userId,
+            IsBanned = bannedTill == null || bannedTill < _dateProvider.UtcNow,
+            BannedTill = bannedTill
+        };
     }
 }

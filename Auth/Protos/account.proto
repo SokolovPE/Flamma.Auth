@@ -26,6 +26,11 @@ service AccountManager {
   rpc PermanentBan (UserIdRequest) returns (.google.protobuf.Empty);
   // Unban user
   rpc Unban (UserIdRequest) returns (.google.protobuf.Empty);
+  // Check user ban status
+  rpc IsBanned (UserIdRequest) returns (IsBannedResponse);
+  // Get user
+  rpc GetUserById (UserIdRequest) returns (UserInfoResponse);
+  rpc GetUserByUsername (UserNameRequest) returns (UserInfoResponse);
   // Test method with auth
   rpc Test (google.protobuf.Empty) returns (TestResponse);
 }
@@ -87,13 +92,33 @@ message RevokeTokenRequest {
   string token = 1;
 }
 
-// Request to ban user for fixed period
+// Request to ban user for fixed period.
 message BanRequest {
   string user_id = 1;
   google.protobuf.Timestamp ban_period = 2;
 }
 
-// Request to ban user permanently
+// Response with user ban status;
+message IsBannedResponse {
+  bool is_banned = 1;
+  google.protobuf.Timestamp banned_till = 2;
+}
+
+// Request with user id.
 message UserIdRequest {
   string user_id = 1;
+}
+
+// Request with username.
+message UserNameRequest {
+  string username = 1;
+}
+
+// Response with user information.
+message UserInfoResponse {
+  string username = 1;
+  google.protobuf.Timestamp registered_since = 2;
+  google.protobuf.Timestamp banned_till = 3;
+  bool is_banned = 4;
+  UserInfo user_info = 5;
 }

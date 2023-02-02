@@ -147,4 +147,13 @@ public class MockAccountRepository : IAccountRepository
         var data = _userData.FirstOrDefault(data => data.Value.Id == id);
         return Task.FromResult(data.Value);
     }
+
+    /// <inheritdoc />
+    public async Task<DateTime?> GetUserBanDateAsync(Guid id, CancellationToken token = default)
+    {
+        var bannedTill = _userData.Where(data => data.Value.Id == id)
+            .Select(userData => userData.Value.BannedTill)
+            .FirstOrDefault();
+        return bannedTill;
+    }
 }

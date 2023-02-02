@@ -42,5 +42,10 @@ public class UserData : PgRepoEntity<AuthDbContext>
     /// <summary>
     ///     Date user is banned till
     /// </summary>
-    public DateTime? BannedTill { get; set; } = null;
+    public DateTime? BannedTill { get; set; }
+    
+    /// <summary>
+    ///     Date and time user was registered at
+    /// </summary>
+    public DateTime RegisteredSince { get; set; }
 }

@@ -40,5 +40,8 @@ public class MappingProfile : Profile
         CreateMap<Models.JwtTokenInfo, TokenInfo>()
             .ForMember(dest => dest.TokenValidTo,
                 mo => mo.MapFrom(src => src.TokenValidTo.ToTimestamp()));
+
+        // Banned info from database to Grpc response
+        CreateMap<Models.UserBanInfo, IsBannedResponse>();
     }
 }
