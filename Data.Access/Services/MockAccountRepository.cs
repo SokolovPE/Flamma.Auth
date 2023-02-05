@@ -24,9 +24,10 @@ public class MockAccountRepository : IAccountRepository
         {
             // Dummy record 1
             {
-                "bobv", new UserData
+                "bob", new UserData
                 {
-                    Username = "bobv",
+                    Id = Guid.Parse("47b70120-b644-406a-8d90-c09bf734737f"),
+                    Username = "bob",
                     PasswordHash = "",
                     AdditionalUserInformation = new AdditionalUserInformation
                     {
@@ -34,13 +35,15 @@ public class MockAccountRepository : IAccountRepository
                         LastName = "Valentine",
                         PrimaryLocationId = Guid.Parse("d01eb040-e06b-4ed0-99d8-e134e0a061f7"),
                         BirthDate = new DateTime(1990, 5, 14).ToUniversalTime()
-                    }
+                    },
+                    BannedTill = new DateTime(2199, 1,1)
                 }
             },
             // Dummy record 2
             {
                 "rick", new UserData
                 {
+                    Id = Guid.Parse("1e6501e1-3d08-409b-931e-950a4fd8e902"),
                     Username = "rick",
                     PasswordHash = "",
                     AdditionalUserInformation = new AdditionalUserInformation
